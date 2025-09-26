@@ -9,8 +9,8 @@ contract TicTacToe {
         int diag2;
         uint moves;
 
-        for (uint row; row < 3; row++) {
-            for (uint col; col < 3; col++) {
+        for (uint row; row < 3; ++row) {
+            for (uint col; col < 3; ++col) {
                 if (grid[row][col] != 0) {
                     int player = grid[row][col] == 1 ? int(1) : -1;
 
@@ -18,7 +18,7 @@ contract TicTacToe {
                     if (row + col == 2) diag2 += player;
                     rows[row] += player;
                     cols[col] += player;
-                    moves++;
+                    ++moves;
                 }
             }
         }
@@ -26,7 +26,7 @@ contract TicTacToe {
         if (diag1 == 3 || diag2 == 3) return 1;
         if (diag1 == -3 || diag2 == -3) return 2;
 
-        for (uint index; index < 3; index++) {
+        for (uint index; index < 3; ++index) {
             if (rows[index] == 3 || cols[index] == 3) return 1;
             if (rows[index] == -3 || cols[index] == -3) return 2;
         }

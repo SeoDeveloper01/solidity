@@ -28,7 +28,7 @@ contract RockPaperScissors {
         game.bet = msg.value;
         games[lastGameId] = game;
 
-        emit GameCreated(game.player1, lastGameId++, msg.value);
+        emit GameCreated(game.player1, ++lastGameId, msg.value);
     }
 
     function joinGame(uint gameNumber) external payable {

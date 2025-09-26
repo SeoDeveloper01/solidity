@@ -15,7 +15,7 @@ contract RomanNumeralsEncoder {
             } else if (digit > 4) {
                 bytes memory part = '';
 
-                for (uint repeat = digit - 5; repeat > 0; repeat--) {
+                for (uint repeat = digit - 5; repeat > 0; --repeat) {
                     part = bytes.concat(part, map[count]);
                 }
 
@@ -25,7 +25,7 @@ contract RomanNumeralsEncoder {
             } else if (digit > 0) {
                 bytes memory part = '';
 
-                for (uint repeat; repeat < digit; repeat++) {
+                for (uint repeat; repeat < digit; ++repeat) {
                     part = bytes.concat(part, map[count]);
                 }
 
