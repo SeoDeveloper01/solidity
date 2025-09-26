@@ -4,6 +4,7 @@ A collection of my Solidity smart contract examples for the EVM.
 
 ## Contracts List:
 
+-   [FIFO-like waiting list](./contracts/fifo-waiting-list/)
 -   [Gift Coin](./contracts/gift-coin/)
 -   [Rock, Paper, Scissors](./contracts/rock-paper-scissors/)
 -   [Roman Numerals Encoder](./contracts/integer-to-roman/)
