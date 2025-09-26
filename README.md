@@ -4,6 +4,7 @@ A collection of my Solidity smart contract examples for the EVM.
 
 ## Contracts List:
 
+-   [Gift Coin](./contracts/gift-coin/README.md)
 -   [Rock, Paper, Scissors](./contracts/rock-paper-scissors/README.md)
 -   [Roman Numerals Encoder](./contracts/integer-to-roman/README.md)
 -   [Tic-Tac-Toe Checker](./contracts/tic-tac-toe/README.md)
