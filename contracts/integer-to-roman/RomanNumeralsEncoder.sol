@@ -3,10 +3,10 @@ pragma solidity ^0.8.30;
 
 contract RomanNumeralsEncoder {
     function solution(uint num) external pure returns (string memory) {
-        bytes memory map = 'IVXLCDM';
+        bytes7 map = 'IVXLCDM';
         bytes memory res = '';
 
-        for (uint count = 0; num > 0; count += 2) {
+        for (uint count; num > 0; count += 2) {
             uint digit = num % 10;
             num /= 10;
 
@@ -25,7 +25,7 @@ contract RomanNumeralsEncoder {
             } else if (digit > 0) {
                 bytes memory part = '';
 
-                for (uint repeat = 0; repeat < digit; repeat++) {
+                for (uint repeat; repeat < digit; repeat++) {
                     part = bytes.concat(part, map[count]);
                 }
 
