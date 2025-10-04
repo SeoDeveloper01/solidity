@@ -3,12 +3,13 @@ pragma solidity ^0.8.30;
 
 contract GiftCoin {
     mapping(address => uint) private coins;
-    address private immutable owner;
+    address private immutable owner = msg.sender;
 
     event GiftSent(address from, address to, uint amount);
 
-    constructor() {
-        owner = msg.sender;
+    modifier onlyOwner() {
+        require(msg.sender == owner);
+        _;
     }
 
     function sendGift(address receiver, uint amount) external {
@@ -22,11 +23,6 @@ contract GiftCoin {
 
     function mintCoins(address target, uint mintedAmount) external onlyOwner {
         coins[target] += mintedAmount;
-    }
-
-    modifier onlyOwner() {
-        require(msg.sender == owner);
-        _;
     }
 
     function balanceOf(address addr) external view returns (uint) {

@@ -7,13 +7,9 @@ contract WaitingList {
         uint amount;
     }
 
-    address private immutable owner;
+    address private immutable owner = msg.sender;
     User[] private queue;
     uint private start;
-
-    constructor() {
-        owner = msg.sender;
-    }
 
     function push() external payable {
         require(msg.value > 0.09 ether);

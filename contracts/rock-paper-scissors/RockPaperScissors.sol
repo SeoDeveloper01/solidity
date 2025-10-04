@@ -2,10 +2,6 @@
 pragma solidity ^0.8.30;
 
 contract RockPaperScissors {
-    event GameCreated(address creator, uint gameNumber, uint bet);
-    event GameStarted(address payable[2] players, uint gameNumber);
-    event GameComplete(address winner, uint gameNumber);
-
     struct Game {
         address payable player1;
         address payable player2;
@@ -17,6 +13,10 @@ contract RockPaperScissors {
 
     mapping(uint => Game) private games;
     uint private lastGameId;
+
+    event GameCreated(address creator, uint gameNumber, uint bet);
+    event GameStarted(address payable[2] players, uint gameNumber);
+    event GameComplete(address winner, uint gameNumber);
 
     function createGame(address payable participant) external payable {
         require(msg.value > 0 wei);
