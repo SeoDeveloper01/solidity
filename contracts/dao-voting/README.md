@@ -6,11 +6,11 @@ In this system, members can propose actions or initiatives and vote on them to d
 
 ## Input:
 
--   `constructor(uint contributionTimeEnd, uint voteTime, uint quorum)`: Initializes the DAO with specific parameters. `contributionTimeEnd` sets the duration, in seconds from the initialization of the DAO, during which contributions are accepted. `voteTime` this parameter sets the duration, measured in seconds from the creation of a proposal, during which voting is open. `quorum` represents the minimum percentage of the combined total vote weightage from all contributors required for a proposal to be executed. Each vote holds a weight equivalent to the number of shares held by the individual voter;
+-   `initializeDAO(uint contributionDuration, uint newVoteDuration, uint newQuorum)`: Initializes the DAO with specific parameters. `contributionTimeEnd` sets the duration, in seconds from the initialization of the DAO, during which contributions are accepted. `voteTime` this parameter sets the duration, measured in seconds from the creation of a proposal, during which voting is open. `quorum` represents the minimum percentage of the combined total vote weightage from all contributors required for a proposal to be executed. Each vote holds a weight equivalent to the number of shares held by the individual voter;
 
 -   `contribution() payable`: Allows users to contribute ETH to the DAO. The amount contributed is converted into shares and added to the user's balance. The function ensures that contributions are only accepted within the set contribution time frame and that the amount is greater than zero;
 
--   `reedemShare(uint amount)`: Enables investors to redeem their shares in exchange for the equivalent `amount` in Wei (1 wei equals 1 share) from the DAO's available funds. The function checks if the investor has enough shares and if the DAO has sufficient available funds before proceeding with the redemption;
+-   `redeemShare(uint amount)`: Enables investors to redeem their shares in exchange for the equivalent `amount` in Wei (1 wei equals 1 share) from the DAO's available funds. The function checks if the investor has enough shares and if the DAO has sufficient available funds before proceeding with the redemption;
 
 -   `transferShare(uint amount, address to)`: Allows investors to transfer a specified `amount` of their shares `to` another address. The function ensures that the investor has enough shares to transfer and that the DAO has enough available funds. The recipient is added to the list of investors if not already present;
 

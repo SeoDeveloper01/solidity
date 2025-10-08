@@ -1,118 +1,105 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.30;
+pragma solidity 0.8.30;
 
 contract DAO {
     struct Proposal {
         string description;
-        uint256 amount;
+        uint amount;
         address payable recipient;
-        address[] investors;
         uint voteTimeEnd;
+        uint weight;
+        mapping(address => bool) investors;
     }
 
     address private immutable owner = msg.sender;
-    uint private contributionTimeEnd;
-    uint public proposalsLength;
-    uint private voteTime;
-    uint private quorum;
-    address[] private allInvestors;
-    mapping(address => uint) private users;
+
     mapping(uint => Proposal) private proposals;
+    uint private proposalsLength;
 
-    function initializeDAO(uint256 _contributionTimeEnd, uint256 _voteTime, uint256 _quorum) public {
+    mapping(address => uint) private shares;
+    address[] private investorsList;
+
+    uint private contributionTimeEnd;
+    uint private voteDuration;
+    uint private quorum;
+
+    function initializeDAO(uint contributionDuration, uint newVoteDuration, uint newQuorum) external {
         require(msg.sender == owner);
-        require(_contributionTimeEnd > 0);
-        require(_voteTime > 0);
-        require(_quorum > 0);
+        require(contributionDuration > 0);
+        require(newVoteDuration > 0);
+        require(newQuorum > 0);
 
-        contributionTimeEnd = block.timestamp + _contributionTimeEnd;
-        voteTime = _voteTime;
-        quorum = _quorum;
+        contributionTimeEnd = contributionDuration + block.timestamp;
+        voteDuration = newVoteDuration;
+        quorum = newQuorum;
     }
 
-    function contribution() public payable {
-        require(block.timestamp < contributionTimeEnd);
+    function contribution() external payable {
         require(msg.value > 0);
+        require(block.timestamp < contributionTimeEnd);
 
-        users[msg.sender] = msg.value;
-        addInvestor(msg.sender);
+        if (shares[msg.sender] == 0) investorsList.push(msg.sender);
+        shares[msg.sender] += msg.value;
     }
 
-    function redeemShare(uint256 amount) public {
-        require(users[msg.sender] >= amount);
+    function redeemShare(uint amount) external {
+        require(address(this).balance >= amount);
+        require(shares[msg.sender] >= amount);
 
         payable(msg.sender).transfer(amount);
-        users[msg.sender] -= amount;
+        shares[msg.sender] -= amount;
     }
 
-    function transferShare(uint256 amount, address to) public {
+    function transferShare(uint amount, address to) external {
         require(amount > 0);
-        require(users[msg.sender] >= amount);
+        require(shares[msg.sender] >= amount);
 
-        users[msg.sender] -= amount;
-        users[to] += amount;
-        addInvestor(to);
+        if (shares[to] == 0) investorsList.push(to);
+        shares[msg.sender] -= amount;
+        shares[to] += amount;
     }
 
-    function createProposal(string calldata description, uint256 amount, address payable recipient) public {
+    function createProposal(string calldata description, uint amount, address payable receipient) external {
         require(msg.sender == owner);
         require(address(this).balance >= amount);
 
-        Proposal storage proposal = proposals[proposalsLength++];
+        Proposal storage newProposal = proposals[proposalsLength++];
 
-        proposal.description = description;
-        proposal.amount = amount;
-        proposal.recipient = recipient;
-        proposal.voteTimeEnd = block.timestamp + voteTime;
+        newProposal.description = description;
+        newProposal.amount = amount;
+        newProposal.recipient = receipient;
+        newProposal.voteTimeEnd = voteDuration + block.timestamp;
     }
 
-    function voteProposal(uint256 proposalId) public {
-        require(proposals[proposalId].voteTimeEnd > block.timestamp);
+    function voteProposal(uint proposalId) external {
+        Proposal storage proposal = proposals[proposalId];
 
-        address[] memory investors = allInvestorList();
-        bool isInvestor;
+        require(shares[msg.sender] > 0);
+        require(proposal.voteTimeEnd > block.timestamp);
+        require(!proposal.investors[msg.sender]);
 
-        for (uint index; index < investors.length; ++index) {
-            if (investors[index] == msg.sender) {
-                isInvestor = true;
-                break;
-            }
-        }
-
-        require(isInvestor);
-
-        address[] storage proposalInvestors = proposals[proposalId].investors;
-
-        for (uint index; index < proposalInvestors.length; ++index) {
-            if (proposalInvestors[index] == msg.sender) revert();
-        }
-
-        proposalInvestors.push(msg.sender);
+        proposal.weight += shares[msg.sender];
+        proposal.investors[msg.sender] = true;
     }
 
-    function executeProposal(uint256 proposalId) public {
+    function executeProposal(uint proposalId) external {
+        Proposal storage proposal = proposals[proposalId];
+
         require(msg.sender == owner);
+        require(block.timestamp > proposal.voteTimeEnd);
 
-        Proposal memory proposal = proposals[proposalId];
-        address[] memory investors = proposal.investors;
-        uint currentQuorum;
-
-        for (uint index; index < investors.length; ++index) {
-            currentQuorum += users[investors[index]];
-        }
-
-        if (currentQuorum >= quorum) proposal.recipient.transfer(proposal.amount);
+        if (proposal.weight >= quorum) proposal.recipient.transfer(proposal.amount);
     }
 
-    function proposalList() public view returns (string[] memory, uint[] memory, address[] memory) {
-        require(proposalsLength > 0, 'emty list');
+    function proposalList() external view returns (string[] memory, uint[] memory, address[] memory) {
+        require(proposalsLength > 0);
 
         string[] memory descriptions = new string[](proposalsLength);
         uint[] memory amounts = new uint[](proposalsLength);
         address[] memory recipients = new address[](proposalsLength);
 
         for (uint index; index < proposalsLength; ++index) {
-            Proposal memory proposal = proposals[index];
+            Proposal storage proposal = proposals[index];
 
             descriptions[index] = proposal.description;
             amounts[index] = proposal.amount;
@@ -122,22 +109,9 @@ contract DAO {
         return (descriptions, amounts, recipients);
     }
 
-    function allInvestorList() public view returns (address[] memory) {
-        require(allInvestors.length > 0);
+    function allInvestorList() external view returns (address[] memory) {
+        require(investorsList.length > 0);
 
-        return allInvestors;
-    }
-
-    function addInvestor(address investor) private {
-        bool hasInvestor;
-
-        for (uint index; index < allInvestors.length; ++index) {
-            if (allInvestors[index] == investor) {
-                hasInvestor = true;
-                break;
-            }
-        }
-
-        if (!hasInvestor) allInvestors.push(investor);
+        return investorsList;
     }
 }
