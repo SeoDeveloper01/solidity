@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.30;
+pragma solidity ^0.8.30;
 
 contract DAO {
     struct Proposal {
@@ -11,20 +11,29 @@ contract DAO {
         mapping(address => bool) investors;
     }
 
+    struct InvestorInfo {
+        uint share;
+        bool hasContributed;
+    }
+
     address private immutable owner = msg.sender;
 
     mapping(uint => Proposal) private proposals;
     uint private proposalsLength;
 
-    mapping(address => uint) private shares;
+    mapping(address => InvestorInfo) private shares;
     address[] private investorsList;
 
     uint private contributionTimeEnd;
     uint private voteDuration;
     uint private quorum;
 
-    function initializeDAO(uint contributionDuration, uint newVoteDuration, uint newQuorum) external {
+    modifier onlyOwner() {
         require(msg.sender == owner);
+        _;
+    }
+
+    function initializeDAO(uint contributionDuration, uint newVoteDuration, uint newQuorum) external onlyOwner {
         require(contributionDuration > 0);
         require(newVoteDuration > 0);
         require(newQuorum > 0);
@@ -38,29 +47,43 @@ contract DAO {
         require(msg.value > 0);
         require(block.timestamp < contributionTimeEnd);
 
-        if (shares[msg.sender] == 0) investorsList.push(msg.sender);
-        shares[msg.sender] += msg.value;
+        InvestorInfo storage investor = shares[msg.sender];
+
+        if (!investor.hasContributed) {
+            investor.hasContributed = true;
+            investorsList.push(msg.sender);
+        }
+
+        investor.share += msg.value;
     }
 
     function redeemShare(uint amount) external {
+        InvestorInfo storage investor = shares[msg.sender];
+
         require(address(this).balance >= amount);
-        require(shares[msg.sender] >= amount);
+        require(investor.share >= amount);
 
         payable(msg.sender).transfer(amount);
-        shares[msg.sender] -= amount;
+        investor.share -= amount;
     }
 
     function transferShare(uint amount, address to) external {
-        require(amount > 0);
-        require(shares[msg.sender] >= amount);
+        InvestorInfo storage sender = shares[msg.sender];
+        InvestorInfo storage recipient = shares[to];
 
-        if (shares[to] == 0) investorsList.push(to);
-        shares[msg.sender] -= amount;
-        shares[to] += amount;
+        require(amount > 0);
+        require(sender.share >= amount);
+
+        if (!recipient.hasContributed) {
+            recipient.hasContributed = true;
+            investorsList.push(to);
+        }
+
+        sender.share -= amount;
+        recipient.share += amount;
     }
 
-    function createProposal(string calldata description, uint amount, address payable receipient) external {
-        require(msg.sender == owner);
+    function createProposal(string calldata description, uint amount, address payable receipient) external onlyOwner {
         require(address(this).balance >= amount);
 
         Proposal storage newProposal = proposals[proposalsLength++];
@@ -73,19 +96,19 @@ contract DAO {
 
     function voteProposal(uint proposalId) external {
         Proposal storage proposal = proposals[proposalId];
+        uint investorShare = shares[msg.sender].share;
 
-        require(shares[msg.sender] > 0);
+        require(investorShare > 0);
         require(proposal.voteTimeEnd > block.timestamp);
         require(!proposal.investors[msg.sender]);
 
-        proposal.weight += shares[msg.sender];
+        proposal.weight += investorShare;
         proposal.investors[msg.sender] = true;
     }
 
-    function executeProposal(uint proposalId) external {
+    function executeProposal(uint proposalId) external onlyOwner {
         Proposal storage proposal = proposals[proposalId];
 
-        require(msg.sender == owner);
         require(block.timestamp > proposal.voteTimeEnd);
 
         if (proposal.weight >= quorum) proposal.recipient.transfer(proposal.amount);
