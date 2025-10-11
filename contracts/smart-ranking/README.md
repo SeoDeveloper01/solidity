@@ -12,6 +12,6 @@ This smart contract keeps track of the roll numbers and marks obtained by studen
 
 ## Output:
 
--   `scoreByRank(uint rank)`: This function returns the marks obtained by a student who has a particular rank;
+-   `scoreByRank(uint rank) returns (uint)`: This function returns the marks obtained by a student who has a particular rank;
 
--   `rollNumberByRank(uint rank)`: This function returns the roll number of a student who has a particular rank.
+-   `rollNumberByRank(uint rank) returns (uint)`: This function returns the roll number of a student who has a particular rank.
