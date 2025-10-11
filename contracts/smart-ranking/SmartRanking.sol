@@ -35,6 +35,8 @@ contract SmartRanking {
 
     function sortByRank() private {
         unchecked {
+            isSorted = true;
+
             for (uint slow; slow < students.length; ++slow) {
                 uint maxIndex = slow;
 
