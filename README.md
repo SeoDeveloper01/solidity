@@ -11,6 +11,7 @@ A collection of my Solidity smart contract examples for the EVM.
 -   [Rock, Paper, Scissors](./contracts/rock-paper-scissors/)
 -   [Roman Numerals Encoder](./contracts/integer-to-roman/)
 -   [Smart Ranking](./contracts/smart-ranking/)
+-   [Smart Wallet](./contracts/smart-wallet/)
 -   [Tic-Tac-Toe Checker](./contracts/tic-tac-toe/)
 
 <picture>
