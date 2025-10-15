@@ -4,6 +4,7 @@ A collection of my Solidity smart contract examples for the EVM.
 
 ## Contracts List:
 
+-   [Bookstore](./contracts/bookstore/)
 -   [DAO Voting](./contracts/dao-voting/)
 -   [FIFO-like waiting list](./contracts/fifo-waiting-list/)
 -   [Gift Coin](./contracts/gift-coin/)
